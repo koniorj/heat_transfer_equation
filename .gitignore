@@ -12,6 +12,9 @@ gradle/
 gradlew
 gradlew.bat
 local.properties
+build.gradle.kts
+gradle.properties
+settings.gradle.kts
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
