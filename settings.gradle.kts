@@ -1,0 +1,1 @@
+rootProject.name = "heat_trasnfer_equation"
