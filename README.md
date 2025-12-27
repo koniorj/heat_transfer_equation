@@ -1,31 +1,35 @@
-# Finite Element Method (FEM) Solver in Kotlin
+# 1D Heat Transport Solver (FEM)
 
-## Problem Description: 1D Heat Transport
-This project implements a Finite Element Method (FEM) solver for a 1D heat conduction problem. The goal is to find the temperature distribution $u(x)$ along a bar of length $L=3$.
+This project implements a Finite Element Method (FEM) solver for a one-dimensional steady-state heat transport problem.
 
-### Differential Equation
-The steady-state heat equation is given by:
-$$-\frac{d}{dx} \left( k(x) \frac{du}{dx} \right) = 0$$
+## Problem Overview
+The objective is to find the temperature distribution $u(x)$ along a bar of length $L=3$.
 
-where $k(x)$ is the thermal conductivity coefficient:
-- $k(x) = 0.5$ for $x \in [0, 1]$
-- $k(x) = 1.0$ for $x \in (1, 3]$
+### Governing Equation
+The steady-state heat conduction is described by the following differential equation:
+$$-k(x) \frac{d^2u}{dx^2} = 0, \quad x \in (0, 3)$$
+
+### Thermal Conductivity $k(x)$
+The conductivity coefficient is piecewise constant across the domain:
+* $k(x) = 0.5$ for $x \in [0, 1]$
+* $k(x) = 1.0$ for $x \in (1, 3]$
 
 ### Boundary Conditions
-The system is subject to the following conditions:
-1. **Robin Boundary Condition** at $x=0$:
-   $$\frac{du(0)}{dx} - u(0) = 1$$
-2. **Dirichlet Boundary Condition** at $x=3$:
-   $$u(3) = 3$$
+1.  **Left boundary ($x=0$):** Robin boundary condition
+    $$\frac{du(0)}{dx} - u(0) = 1$$
+2.  **Right boundary ($x=3$):** Dirichlet boundary condition
+    $$u(3) = 3$$
 
-## Mathematical Formulation (Variational Form)
-To solve this using FEM, we derive the weak form:
-$$\int_{0}^{3} k(x) u'(x) v'(x) dx + k(0)u(0)v(0) = -k(0)v(0)$$
-*(Note: Full derivation steps will be added to the project documentation.)*
+## Mathematical Model (Weak Form)
+The problem is solved using the variational (weak) formulation derived as:
+$$\int_0^3 k(x)u'(x)v'(x) \, dx + 0.5u(0)v(0) = -0.5v(0)$$
 
-## Implementation Goals
-- [ ] Derive the variational formulation.
-- [ ] Implement a mesh generator with $n$ elements.
-- [ ] Use **Gauss-Legendre Quadrature** for numerical integration.
-- [ ] Solve the resulting linear system $\mathbf{K}\mathbf{u} = \mathbf{F}$.
-- [ ] Visualize the results using external tools.
+## Numerical Implementation
+1.  **Discretization:** The domain $[0, 3]$ is divided into $n$ finite elements.
+2.  **Integration:** Numerical integration is performed using 2-point Gauss-Legendre quadrature.
+3.  **Solver:** A linear system of equations $\mathbf{K}\mathbf{u} = \mathbf{F}$ is assembled and solved in Kotlin.
+
+## Technologies
+* **Language:** Kotlin (JDK 21)
+* **Build Tool:** Gradle
+* **IDE:** IntelliJ IDEA
