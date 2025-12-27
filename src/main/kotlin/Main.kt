@@ -1,16 +1,35 @@
-package org.example
+import org.jetbrains.kotlinx.kandy.dsl.plot
+import org.jetbrains.kotlinx.kandy.letsplot.layers.line
+import org.jetbrains.kotlinx.kandy.letsplot.export.save
+import org.jetbrains.kotlinx.kandy.letsplot.layers.points
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    print("Prosze o podanie n (liczba calkowita): ")
+    val input = readln().toInt()
+    val n = maxOf(3, input)
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
-    }
+    val geometry = Geometry(n, 3.0)
+    val solver = Solver(geometry)
+
+    solver.buildMatrix()
+    val results = solver.gaussianElimination().toList() // mamy rozklad temperatur. Pozostalo zwizualizowac
+    val coordinates = geometry.nodesArray.toList()
+
+    val chart = mapOf(
+        "x" to coordinates,
+        "u(x)" to results
+    )
+
+    chart.plot {
+        line {
+            x("x")
+            y("u(x)")
+        }
+        if (n < 30) {
+            points {
+                x("x")
+                y("u(x)")
+            }
+        }
+    }.save("wykres_dla_$n.png")
 }
