@@ -6,7 +6,7 @@ import org.jetbrains.kotlinx.kandy.letsplot.layers.points
 fun main() {
     print("Prosze o podanie n (liczba calkowita): ")
     val input = readln().toInt()
-    val n = maxOf(3, input)
+    val n = input.coerceIn(3, 1000)
 
     val geometry = Geometry(n, 3.0)
     val solver = Solver(geometry)

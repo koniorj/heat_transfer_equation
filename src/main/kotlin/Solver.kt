@@ -12,6 +12,8 @@ class Solver(val geometry: Geometry) {
     private val pointValue: Double =  1.0 / sqrt(3.0)
     private val gaussPoints = doubleArrayOf(-pointValue, pointValue)
 
+     // K * u = F, szukamy u
+
     fun buildMatrix() {
         for (element in 0 until geometry.n) {
             for (i in 0 until 2) {
@@ -22,22 +24,32 @@ class Solver(val geometry: Geometry) {
                 val realPoint = (gaussPoint + 1.0) * 0.5 * geometry.h + geometry.nodesArray[element]
                 //jaki jest material?
                 val k = geometry.getK(realPoint)
-                // zeby dopasowac wynik do realnej szerokosci
+                // zeby dopasowac wynik do realnej szerokosci. Jakobian
                 val scale = geometry.h / 2.0
 
                 // funkcja ksztaltu - jak temp rozchodzi sie miedzy naszymi wezlami
+                // umowilismy sie ze temp przeplywa liniowo, f ksztaltu sa liniowe,
+                // wiec ich pochodne dPhi sa stale
                 val dPhiRight = 1.0 / geometry.h // zamiast u' i v'. Nachylenie
                 val dPhiLeft = -1.0 / geometry.h
+                // moglibysmy uzyc 1 punktu (f podcalkowa jest stala), ale
+                // k jest zmienne! wtedy moglibysmy nie zlapac momentu zmiany
 
                 // zal. u(x) = u0 * dPhi0(x) + u1 * dPhi1(X) + ...
                 // k * dphiLeft * dphiRight -> ile ciepla przeplynie z lewej na prawa przez material k
 
                 // calka mowi nam o zdolnosci preta do transportu ciepla w danym pkcie. ku'v'
                 // duza calka -> dobra zdolnosc
+
+                // jako funkcje testujace v wybieramy dokladnie
+                // te same nachylenia, ktorych uzylismy do opisu temp u
                 // dla kazdego elementu dostajemy 4 liczby:
+
+                // w matrixK przechowujemy wsp stojace przy niewiadomych ui
+                // np. dPhiLeft * dPhiRight jak stromosc lewego wplywa na stromosc prawego
                 matrixK[element][element] += scale * k * dPhiLeft * dPhiLeft * weight
                 matrixK[element][element+1] += scale * k * dPhiLeft * dPhiRight * weight
-                matrixK[element+1][element] += scale * k * dPhiLeft * dPhiRight * weight
+                matrixK[element+1][element] += scale * k * dPhiRight * dPhiLeft * weight
                 matrixK[element+1][element+1] += scale * k * dPhiRight * dPhiRight * weight
             }
         }
@@ -62,6 +74,9 @@ class Solver(val geometry: Geometry) {
         val tempVector = vectorF.copyOf()
 
         // nie mamy zer na przekatnej. nie musimy robic rowswapow
+        // ogolnie bardzo upraszcza sie nam sprawa eliminacji gaussa przez
+        // nature matrixK -> wezly oddzialuja tylko ze swoimi sasiadami i niezerowe
+        // wartosci znajduja sie praktycznie tylko wokol przekatnej
 
         for (k in 0 until size) {
             for (i in k+1 until size) {
@@ -75,6 +90,7 @@ class Solver(val geometry: Geometry) {
         }
 
         // back substitution
+        // po eliminacji ostatni wezel zalezy tylko od siebie
         val resultU = DoubleArray(size)
         for (i in size-1 downTo 0) {
             var sum = 0.0
@@ -87,3 +103,10 @@ class Solver(val geometry: Geometry) {
         return resultU
     }
 }
+
+
+//∫ k(x)·(du/dx)·(dv/dx) dx
+// u(x) przyblizamy jako: u(x) = u₁·N₁(x) + u₂·N₂(x) funkcje ksztaltu N
+//N₁(x) = 1 - x   (liniowo maleje od 1 do 0)
+//N₂(x) = x       (liniowo rośnie od 0 do 1)
+// du/dx = u₁·dN₁/dx + u₂·dN₂/dx = u₁·(-1/h) + u₂·(1/h)
